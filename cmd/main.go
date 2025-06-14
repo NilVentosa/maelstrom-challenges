@@ -10,10 +10,12 @@ import (
 
 const (
 	// Message types
-	initType   = "init"
-	initOkType = "init_ok"
-	echoType   = "echo"
-	echoOkType = "echo_ok"
+	initType       = "init"
+	initOkType     = "init_ok"
+	echoType       = "echo"
+	echoOkType     = "echo_ok"
+	generateType   = "generate"
+	generateOkType = "generate_ok"
 
 	// Keys in the messages
 	echoKey      = "echo"
@@ -46,6 +48,8 @@ func main() {
 			response, responseError = getReplyToInit(msg, msgBody)
 		case echoType:
 			response, responseError = getReplyToEcho(msg, msgBody)
+		case generateType:
+			response, responseError = getReplyToGenerate(msg, msgBody)
 		}
 		if responseError != nil {
 			log.Fatalf("There was an error: %+v", responseError)

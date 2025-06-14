@@ -26,3 +26,9 @@ type InitResponseBody struct {
 	Type      string `json:"type"`
 	InReplyTo int    `json:"in_reply_to"`
 }
+
+type GenerateResponseBody struct {
+	Type      string `json:"type"`
+	InReplyTo int    `json:"in_reply_to"`
+	Id        string `json:"id"`
+}
