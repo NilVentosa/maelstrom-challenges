@@ -33,18 +33,19 @@ func main() {
 			log.Printf("Error unmarshaling JSON: %+v", err)
 		}
 
-		msgType, ok := msg.Body[typeKey].(string)
-		if !ok {
-			return
+		var msgBody RequestBody
+		err = json.Unmarshal(msg.Body, &msgBody)
+		if err != nil {
+			log.Printf("Error unmarshaling JSON: %+v", err)
 		}
 
 		var response Message
 		var responseError error
-		switch msgType {
+		switch msgBody.Type {
 		case initType:
-			response, responseError = getReplyToInit(msg)
+			response, responseError = getReplyToInit(msg, msgBody)
 		case echoType:
-			response, responseError = getReplyToEcho(msg)
+			response, responseError = getReplyToEcho(msg, msgBody)
 		}
 		if responseError != nil {
 			log.Fatalf("There was an error: %+v", responseError)
