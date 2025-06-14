@@ -3,48 +3,50 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 )
 
 const (
-	initType     = "init"
-	initOkType   = "init_ok"
-	echoType     = "echo"
-	echoOkType   = "echo_ok"
+	initType   = "init"
+	initOkType = "init_ok"
+	echoType   = "echo"
+	echoOkType = "echo_ok"
+
+	echoKey      = "echo"
 	nodeIdKey    = "node_id"
 	typeKey      = "type"
 	msgIdKey     = "msg_id"
 	inReplyToKey = "in_reply_to"
 )
 
-var nodeId string
-
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	for scanner.Scan() {
-		var received Message
-		err := json.Unmarshal([]byte(scanner.Text()), &received)
+		var msg Message
+		err := json.Unmarshal([]byte(scanner.Text()), &msg)
 		if err != nil {
 			log.Printf("Error unmarshaling JSON: %+v", err)
 		}
 
-		msgType, ok := received.Body[typeKey].(string)
+		msgType, ok := msg.Body[typeKey].(string)
 		if !ok {
 			return
 		}
 
+		var nodeId string
 		switch msgType {
 		case initType:
-			nodeId, ok = received.Body[nodeIdKey].(string)
+			nodeId, ok = msg.Body[nodeIdKey].(string)
 			if !ok {
-				log.Printf("No nodeId in the message: %+v", received)
+				log.Printf("No nodeId in the message: %+v", msg)
 				return
 			}
-			replyToInit(received)
+			fmt.Println(getReplyToInit(msg, nodeId))
 		case echoType:
-			replyToEcho(received)
+			fmt.Println(getReplyToEcho(msg, nodeId))
 		}
 	}
 
