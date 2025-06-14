@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 )
@@ -19,12 +18,6 @@ const (
 	inReplyToKey = "in_reply_to"
 )
 
-type Message struct {
-	Src  string         `json:"src"`
-	Dest string         `json:"dest"`
-	Body map[string]any `json:"body"`
-}
-
 var nodeId string
 
 func main() {
@@ -34,7 +27,7 @@ func main() {
 		var received Message
 		err := json.Unmarshal([]byte(scanner.Text()), &received)
 		if err != nil {
-			log.Printf("Error unmarshaling JSON: %s", err)
+			log.Printf("Error unmarshaling JSON: %+v", err)
 		}
 
 		msgType, ok := received.Body[typeKey].(string)
@@ -46,7 +39,7 @@ func main() {
 		case initType:
 			nodeId, ok = received.Body[nodeIdKey].(string)
 			if !ok {
-				log.Printf("No nodeId in the message: %s", received)
+				log.Printf("No nodeId in the message: %+v", received)
 				return
 			}
 			replyToInit(received)
@@ -56,50 +49,6 @@ func main() {
 	}
 
 	if err := scanner.Err(); err != nil {
-		log.Fatalf("Error reading from stdin: %s", err)
+		log.Fatalf("Error reading from stdin: %+v", err)
 	}
-}
-
-func replyToInit(msg Message) {
-	responseBody := make(map[string]any)
-	msgId, ok := msg.Body[msgIdKey].(float64)
-	if !ok {
-		log.Printf("No messageId in the message: %s", msg)
-		return
-	}
-	responseBody[inReplyToKey] = msgId
-	responseBody[typeKey] = initOkType
-
-	var response Message
-	response.Src = nodeId
-	response.Dest = msg.Src
-	response.Body = responseBody
-
-	jsonResponse, _ := json.Marshal(response)
-	fmt.Println(string(jsonResponse))
-}
-
-func replyToEcho(msg Message) {
-	responseBody := make(map[string]any)
-	msgId, ok := msg.Body[msgIdKey].(float64)
-	if !ok {
-		log.Printf("No messageId in the message: %s", msg)
-		return
-	}
-	responseBody[inReplyToKey] = msgId
-	responseBody[typeKey] = echoOkType
-	echo, ok := msg.Body[echoType].(string)
-	if !ok {
-		log.Printf("No echo in the message: %s", msg)
-		return
-	}
-	responseBody[echoType] = echo
-
-	var response Message
-	response.Src = nodeId
-	response.Dest = msg.Src
-	response.Body = responseBody
-
-	jsonResponse, _ := json.Marshal(response)
-	fmt.Println(string(jsonResponse))
 }
