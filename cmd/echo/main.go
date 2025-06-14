@@ -8,6 +8,17 @@ import (
 	"os"
 )
 
+const (
+	initType     = "init"
+	initOkType   = "init_ok"
+	echoType     = "echo"
+	echoOkType   = "echo_ok"
+	nodeIdKey    = "node_id"
+	typeKey      = "type"
+	msgIdKey     = "msg_id"
+	inReplyToKey = "in_reply_to"
+)
+
 type Message struct {
 	Src  string         `json:"src"`
 	Dest string         `json:"dest"`
@@ -23,45 +34,70 @@ func main() {
 		var received Message
 		err := json.Unmarshal([]byte(scanner.Text()), &received)
 		if err != nil {
-			log.Fatalf("Error unmarshaling JSON: %s", err)
+			log.Printf("Error unmarshaling JSON: %s", err)
 		}
 
-		switch received.Body["type"].(string) {
-		case "init":
-			nodeId = received.Body["node_id"].(string)
+		msgType, ok := received.Body[typeKey].(string)
+		if !ok {
+			return
+		}
+
+		switch msgType {
+		case initType:
+			nodeId, ok = received.Body[nodeIdKey].(string)
+			if !ok {
+				log.Printf("No nodeId in the message: %s", received)
+				return
+			}
 			replyToInit(received)
-		case "echo":
+		case echoType:
 			replyToEcho(received)
 		}
 	}
 
 	if err := scanner.Err(); err != nil {
+		log.Fatalf("Error reading from stdin: %s", err)
 	}
 }
 
-func replyToInit(received Message) {
+func replyToInit(msg Message) {
 	responseBody := make(map[string]any)
-	responseBody["in_reply_to"] = received.Body["msg_id"].(float64)
-	responseBody["type"] = "init_ok"
+	msgId, ok := msg.Body[msgIdKey].(float64)
+	if !ok {
+		log.Printf("No messageId in the message: %s", msg)
+		return
+	}
+	responseBody[inReplyToKey] = msgId
+	responseBody[typeKey] = initOkType
 
 	var response Message
 	response.Src = nodeId
-	response.Dest = received.Src
+	response.Dest = msg.Src
 	response.Body = responseBody
 
-	json_response, _ := json.Marshal(response)
-	fmt.Println(string(json_response))
+	jsonResponse, _ := json.Marshal(response)
+	fmt.Println(string(jsonResponse))
 }
 
-func replyToEcho(received Message) {
+func replyToEcho(msg Message) {
 	responseBody := make(map[string]any)
-	responseBody["in_reply_to"] = received.Body["msg_id"].(float64)
-	responseBody["type"] = "echo_ok"
-	responseBody["echo"] = received.Body["echo"].(string)
+	msgId, ok := msg.Body[msgIdKey].(float64)
+	if !ok {
+		log.Printf("No messageId in the message: %s", msg)
+		return
+	}
+	responseBody[inReplyToKey] = msgId
+	responseBody[typeKey] = echoOkType
+	echo, ok := msg.Body[echoType].(string)
+	if !ok {
+		log.Printf("No echo in the message: %s", msg)
+		return
+	}
+	responseBody[echoType] = echo
 
 	var response Message
 	response.Src = nodeId
-	response.Dest = received.Src
+	response.Dest = msg.Src
 	response.Body = responseBody
 
 	jsonResponse, _ := json.Marshal(response)
