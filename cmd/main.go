@@ -9,11 +9,13 @@ import (
 )
 
 const (
+	// Message types
 	initType   = "init"
 	initOkType = "init_ok"
 	echoType   = "echo"
 	echoOkType = "echo_ok"
 
+	// Keys in the messages
 	echoKey      = "echo"
 	nodeIdKey    = "node_id"
 	typeKey      = "type"
@@ -36,12 +38,23 @@ func main() {
 			return
 		}
 
+		var response Message
+		var responseError error
 		switch msgType {
 		case initType:
-			fmt.Println(getReplyToInit(msg))
+			response, responseError = getReplyToInit(msg)
 		case echoType:
-			fmt.Println(getReplyToEcho(msg))
+			response, responseError = getReplyToEcho(msg)
 		}
+		if responseError != nil {
+			log.Fatalf("There was an error: %+v", responseError)
+		}
+
+		jsonResponse, err := json.Marshal(response)
+		if err != nil {
+			log.Fatalf("Problem marshalling the response: %+v", err)
+		}
+		fmt.Println(string(jsonResponse), nil)
 	}
 
 	if err := scanner.Err(); err != nil {
