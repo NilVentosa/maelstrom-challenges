@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func getReplyToInit(msg Message, nodeId string) (string, error) {
+func getReplyToInit(msg Message) (string, error) {
 	responseBody := make(map[string]any)
 	msgId, ok := msg.Body[msgIdKey].(float64)
 	if !ok {
@@ -14,10 +14,10 @@ func getReplyToInit(msg Message, nodeId string) (string, error) {
 	responseBody[inReplyToKey] = msgId
 	responseBody[typeKey] = initOkType
 
-	return getReplyMessage(msg, responseBody, nodeId)
+	return getReplyMessage(msg, responseBody)
 }
 
-func getReplyToEcho(msg Message, nodeId string) (string, error) {
+func getReplyToEcho(msg Message) (string, error) {
 	responseBody := make(map[string]any)
 	msgId, ok := msg.Body[msgIdKey].(float64)
 	if !ok {
@@ -31,12 +31,12 @@ func getReplyToEcho(msg Message, nodeId string) (string, error) {
 	}
 	responseBody[echoKey] = echo
 
-	return getReplyMessage(msg, responseBody, nodeId)
+	return getReplyMessage(msg, responseBody)
 }
 
-func getReplyMessage(msg Message, body map[string]any, nodeId string) (string, error) {
+func getReplyMessage(msg Message, body map[string]any) (string, error) {
 	var response Message
-	response.Src = nodeId
+	response.Src = msg.Dest
 	response.Dest = msg.Src
 	response.Body = body
 

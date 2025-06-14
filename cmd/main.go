@@ -36,17 +36,11 @@ func main() {
 			return
 		}
 
-		var nodeId string
 		switch msgType {
 		case initType:
-			nodeId, ok = msg.Body[nodeIdKey].(string)
-			if !ok {
-				log.Printf("No nodeId in the message: %+v", msg)
-				return
-			}
-			fmt.Println(getReplyToInit(msg, nodeId))
+			fmt.Println(getReplyToInit(msg))
 		case echoType:
-			fmt.Println(getReplyToEcho(msg, nodeId))
+			fmt.Println(getReplyToEcho(msg))
 		}
 	}
 
