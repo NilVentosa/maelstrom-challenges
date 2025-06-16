@@ -1,8 +1,10 @@
 package main
 
 import (
-	"github.com/stretchr/testify/assert"
+	"encoding/json"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -60,8 +62,43 @@ func TestGetReplyToEcho(t *testing.T) {
 	assertMessageEquals(t, expectedReply, actualReply)
 }
 
-func assertMessageEquals(t *testing.T, expected Message, actual Message) {
-	assert.Equal(t, expected.Body, actual.Body)
-	assert.Equal(t, expected.Dest, actual.Dest)
+func TestGetReplyToGenerate(t *testing.T) {
+	inputMsg, _ := newMessage(
+		client1,
+		node1,
+		RequestBody{
+			MsgId: msgId,
+			Type:  generateType,
+		},
+	)
+	expectedReply, _ := newMessage(
+		node1,
+		client1,
+		GenerateResponseBody{
+			Type:      generateOkType,
+			InReplyTo: msgId,
+			Id:        "",
+		},
+	)
+
+	actualReply, _ := getReplyToGenerate(inputMsg)
+	var unmarshaledBody GenerateResponseBody
+	json.Unmarshal(actualReply.Body, &unmarshaledBody)
+
+	actualReply2, _ := getReplyToGenerate(inputMsg)
+	var unmarshaledBody2 GenerateResponseBody
+	json.Unmarshal(actualReply2.Body, &unmarshaledBody2)
+
+	assertDestSrcEquals(t, expectedReply, actualReply)
+	assert.NotEqual(t, unmarshaledBody.Id, unmarshaledBody2.Id)
+}
+
+func assertDestSrcEquals(t *testing.T, expected Message, actual Message) {
 	assert.Equal(t, expected.Src, actual.Src)
+	assert.Equal(t, expected.Dest, actual.Dest)
+}
+
+func assertMessageEquals(t *testing.T, expected Message, actual Message) {
+	assertDestSrcEquals(t, expected, actual)
+	assert.Equal(t, expected.Body, actual.Body)
 }

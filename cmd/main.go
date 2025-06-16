@@ -23,6 +23,7 @@ const (
 	typeKey      = "type"
 	msgIdKey     = "msg_id"
 	inReplyToKey = "in_reply_to"
+	idKey        = "id"
 )
 
 func main() {
