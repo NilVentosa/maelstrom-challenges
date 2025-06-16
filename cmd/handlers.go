@@ -10,7 +10,7 @@ func getReplyToInit(msg Message) (Message, error) {
 	var requestBody RequestBody
 	json.Unmarshal(msg.Body, &requestBody)
 
-	return newMessage(
+	return NewMessage(
 		msg.Dest,
 		msg.Src,
 		InitResponseBody{
@@ -23,7 +23,7 @@ func getReplyToEcho(msg Message) (Message, error) {
 	var body RequestBody
 	json.Unmarshal(msg.Body, &body)
 
-	return newMessage(
+	return NewMessage(
 		msg.Dest,
 		msg.Src,
 		EchoResponseBody{
@@ -38,7 +38,7 @@ func getReplyToGenerate(msg Message) (Message, error) {
 	json.Unmarshal(msg.Body, &body)
 
 	id := strconv.FormatInt(time.Now().UnixNano(), 10) + "-" + msg.Dest
-	return newMessage(
+	return NewMessage(
 		msg.Dest,
 		msg.Src,
 		GenerateResponseBody{

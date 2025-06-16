@@ -2,13 +2,31 @@ package main
 
 import "encoding/json"
 
+const (
+	// Message types
+	initType       = "init"
+	initOkType     = "init_ok"
+	echoType       = "echo"
+	echoOkType     = "echo_ok"
+	generateType   = "generate"
+	generateOkType = "generate_ok"
+
+	// Keys in the messages
+	echoKey      = "echo"
+	nodeIdKey    = "node_id"
+	typeKey      = "type"
+	msgIdKey     = "msg_id"
+	inReplyToKey = "in_reply_to"
+	idKey        = "id"
+)
+
 type Message struct {
 	Src  string          `json:"src"`
 	Dest string          `json:"dest"`
 	Body json.RawMessage `json:"body"`
 }
 
-func newMessage(src string, dest string, body any) (Message, error) {
+func NewMessage(src string, dest string, body any) (Message, error) {
 	marshaledBody, err := json.Marshal(body)
 	if err != nil {
 		return Message{}, err

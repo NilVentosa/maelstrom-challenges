@@ -15,7 +15,7 @@ const (
 )
 
 func TestGetReplyToInit(t *testing.T) {
-	inputMsg, _ := newMessage(
+	inputMsg, _ := NewMessage(
 		client1,
 		node1,
 		RequestBody{
@@ -23,7 +23,7 @@ func TestGetReplyToInit(t *testing.T) {
 			Type:  initType,
 		},
 	)
-	expectedReply, _ := newMessage(
+	expectedReply, _ := NewMessage(
 		node1,
 		client1,
 		InitResponseBody{
@@ -38,7 +38,7 @@ func TestGetReplyToInit(t *testing.T) {
 }
 
 func TestGetReplyToEcho(t *testing.T) {
-	inputMsg, _ := newMessage(
+	inputMsg, _ := NewMessage(
 		client1,
 		node1,
 		RequestBody{
@@ -47,7 +47,7 @@ func TestGetReplyToEcho(t *testing.T) {
 			Echo:  echo,
 		},
 	)
-	expectedReply, _ := newMessage(
+	expectedReply, _ := NewMessage(
 		node1,
 		client1,
 		EchoResponseBody{
@@ -63,7 +63,7 @@ func TestGetReplyToEcho(t *testing.T) {
 }
 
 func TestGetReplyToGenerate(t *testing.T) {
-	inputMsg, _ := newMessage(
+	inputMsg, _ := NewMessage(
 		client1,
 		node1,
 		RequestBody{
@@ -71,7 +71,7 @@ func TestGetReplyToGenerate(t *testing.T) {
 			Type:  generateType,
 		},
 	)
-	expectedReply, _ := newMessage(
+	expectedReply, _ := NewMessage(
 		node1,
 		client1,
 		GenerateResponseBody{
