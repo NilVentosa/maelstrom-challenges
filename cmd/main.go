@@ -45,11 +45,11 @@ func main() {
 		var responseError error
 		switch msgBody.Type {
 		case initType:
-			response, responseError = getReplyToInit(msg, msgBody)
+			response, responseError = getReplyToInit(msg)
 		case echoType:
-			response, responseError = getReplyToEcho(msg, msgBody)
+			response, responseError = getReplyToEcho(msg)
 		case generateType:
-			response, responseError = getReplyToGenerate(msg, msgBody)
+			response, responseError = getReplyToGenerate(msg)
 		}
 		if responseError != nil {
 			log.Fatalf("There was an error: %+v", responseError)

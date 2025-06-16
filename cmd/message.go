@@ -8,6 +8,14 @@ type Message struct {
 	Body json.RawMessage `json:"body"`
 }
 
+func newMessage(src string, dest string, body any) (Message, error) {
+	marshaledBody, err := json.Marshal(body)
+	if err != nil {
+		return Message{}, err
+	}
+	return Message{src, dest, marshaledBody}, nil
+}
+
 type RequestBody struct {
 	NodeId    string `json:"node_id"`
 	Echo      string `json:"echo"`
