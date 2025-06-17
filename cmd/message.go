@@ -4,12 +4,18 @@ import "encoding/json"
 
 const (
 	// Message types
-	initType       = "init"
-	initOkType     = "init_ok"
-	echoType       = "echo"
-	echoOkType     = "echo_ok"
-	generateType   = "generate"
-	generateOkType = "generate_ok"
+	initType        = "init"
+	initOkType      = "init_ok"
+	echoType        = "echo"
+	echoOkType      = "echo_ok"
+	generateType    = "generate"
+	generateOkType  = "generate_ok"
+	broadcastType   = "broadcast"
+	broadcastOkType = "broadcast_ok"
+	readType        = "read"
+	readOkType      = "read_ok"
+	topologyType    = "topology"
+	topologyOkType  = "topology_ok"
 
 	// Keys in the messages
 	echoKey      = "echo"
@@ -18,6 +24,8 @@ const (
 	msgIdKey     = "msg_id"
 	inReplyToKey = "in_reply_to"
 	idKey        = "id"
+	messageKey   = "message"
+	messagesKey  = "messages"
 )
 
 type Message struct {
@@ -40,6 +48,7 @@ type RequestBody struct {
 	Type      string `json:"type"`
 	MsgId     int    `json:"msg_id"`
 	InReplyTo int    `json:"in_reply_to"`
+	Message   any    `json:"message"`
 }
 
 type EchoResponseBody struct {
@@ -57,4 +66,20 @@ type GenerateResponseBody struct {
 	Type      string `json:"type"`
 	InReplyTo int    `json:"in_reply_to"`
 	Id        string `json:"id"`
+}
+
+type BroadcastResponseBody struct {
+	Type      string `json:"type"`
+	InReplyTo int    `json:"in_reply_to"`
+}
+
+type ReadResponseBody struct {
+	Type      string `json:"type"`
+	Messages  []any  `json:"messages"`
+	InReplyTo int    `json:"in_reply_to"`
+}
+
+type TopologyResponseBody struct {
+	Type      string `json:"type"`
+	InReplyTo int    `json:"in_reply_to"`
 }

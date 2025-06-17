@@ -56,3 +56,63 @@ func TestHandleMessage_UnknownType(t *testing.T) {
 
 	assert.True(t, strings.Contains(err.Error(), "unknown"))
 }
+
+func TestGetReply_BroadcastMessage(t *testing.T) {
+	body := RequestBody{
+		Type: broadcastType,
+	}
+	marshaledBody, _ := json.Marshal(body)
+	message := Message{
+		Dest: "destination",
+		Src:  "source",
+		Body: marshaledBody,
+	}
+
+	response, err := getReply(message)
+	assert.Nil(t, err)
+
+	var responseBody BroadcastResponseBody
+	json.Unmarshal(response.Body, &responseBody)
+
+	assert.Equal(t, responseBody.Type, broadcastOkType)
+}
+
+func TestGetReply_ReadMessage(t *testing.T) {
+	body := RequestBody{
+		Type: readType,
+	}
+	marshaledBody, _ := json.Marshal(body)
+	message := Message{
+		Dest: "destination",
+		Src:  "source",
+		Body: marshaledBody,
+	}
+
+	response, err := getReply(message)
+	assert.Nil(t, err)
+
+	var responseBody ReadResponseBody
+	json.Unmarshal(response.Body, &responseBody)
+
+	assert.Equal(t, responseBody.Type, readOkType)
+}
+
+func TestGetReply_TopologyMessage(t *testing.T) {
+	body := RequestBody{
+		Type: topologyType,
+	}
+	marshaledBody, _ := json.Marshal(body)
+	message := Message{
+		Dest: "destination",
+		Src:  "source",
+		Body: marshaledBody,
+	}
+
+	response, err := getReply(message)
+	assert.Nil(t, err)
+
+	var responseBody TopologyResponseBody
+	json.Unmarshal(response.Body, &responseBody)
+
+	assert.Equal(t, responseBody.Type, topologyOkType)
+}

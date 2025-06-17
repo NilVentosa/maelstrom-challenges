@@ -93,6 +93,27 @@ func TestGetReplyToGenerate(t *testing.T) {
 	assert.NotEqual(t, unmarshaledBody.Id, unmarshaledBody2.Id)
 }
 
+// func TestGetReplyToBroadcast(t *testing.T) {
+// 	inputMsg, _ := NewMessage(
+// 		client1,
+// 		node1,
+// 		RequestBody{
+// 			MsgId: msgId,
+// 			Type:  broadcastType,
+// 			Messages: ,
+// 		},
+// 	)
+// 	expectedReply, _ := NewMessage(
+// 		node1,
+// 		client1,
+// 		GenerateResponseBody{
+// 			Type:      broadcastOkType,
+// 			InReplyTo: msgId,
+// 			Id:        "",
+// 		},
+// 	)
+// }
+
 func assertDestSrcEquals(t *testing.T, expected Message, actual Message) {
 	assert.Equal(t, expected.Src, actual.Src)
 	assert.Equal(t, expected.Dest, actual.Dest)

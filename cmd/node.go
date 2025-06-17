@@ -37,24 +37,7 @@ func handleMessage(input []byte) ([]byte, error) {
 		return nil, fmt.Errorf("error unmarshaling message: %w", err)
 	}
 
-	var msgBody RequestBody
-	if err := json.Unmarshal(msg.Body, &msgBody); err != nil {
-		return nil, fmt.Errorf("error unmarshaling message body: %w", err)
-	}
-
-	var response Message
-	var responseError error
-
-	switch msgBody.Type {
-	case initType:
-		response, responseError = getReplyToInit(msg)
-	case echoType:
-		response, responseError = getReplyToEcho(msg)
-	case generateType:
-		response, responseError = getReplyToGenerate(msg)
-	default:
-		responseError = fmt.Errorf("unknown message type: %s", msgBody.Type)
-	}
+	response, responseError := getReply(msg)
 
 	if responseError != nil {
 		return nil, responseError
@@ -66,4 +49,27 @@ func handleMessage(input []byte) ([]byte, error) {
 	}
 
 	return jsonResponse, nil
+}
+
+func getReply(msg Message) (Message, error) {
+	var msgBody RequestBody
+	if err := json.Unmarshal(msg.Body, &msgBody); err != nil {
+		return Message{}, err
+	}
+	switch msgBody.Type {
+	case initType:
+		return getReplyToInit(msg)
+	case echoType:
+		return getReplyToEcho(msg)
+	case generateType:
+		return getReplyToGenerate(msg)
+	case broadcastType:
+		return getReplyToBroadcast(msg)
+	case readType:
+		return getReplyToRead(msg)
+	case topologyType:
+		return getReplyToTopology(msg)
+	default:
+		return Message{}, fmt.Errorf("unknown message type: %s", msgBody.Type)
+	}
 }
