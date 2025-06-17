@@ -7,20 +7,20 @@ import (
 	"io"
 )
 
-type Server struct {
+type Node struct {
 	In  io.Reader
 	Out io.Writer
 }
 
-func (server *Server) run() error {
-	scanner := bufio.NewScanner(server.In)
+func (node *Node) run() error {
+	scanner := bufio.NewScanner(node.In)
 	for scanner.Scan() {
 		response, err := handleMessage(scanner.Bytes())
 		if err != nil {
 			return fmt.Errorf("failed to handle message: %w", err)
 		}
 
-		if _, err := fmt.Fprintln(server.Out, string(response)); err != nil {
+		if _, err := fmt.Fprintln(node.Out, string(response)); err != nil {
 			return fmt.Errorf("failed to write response: %w", err)
 		}
 	}

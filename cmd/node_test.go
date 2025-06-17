@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestServer_Run(t *testing.T) {
+func TestNode_Run(t *testing.T) {
 	inputJSON := `
 {"src":"c1","dest":"n1","body":{"type":"echo","msg_id":1,"echo":"Please echo this"}}
 {"src":"c2","dest":"n1","body":{"type":"init","msg_id":2}}
@@ -21,11 +21,11 @@ func TestServer_Run(t *testing.T) {
 	in := strings.NewReader(strings.TrimSpace(inputJSON))
 	out := new(bytes.Buffer)
 
-	server := Server{in, out}
+	node := Node{in, out}
 
-	err := server.run()
+	err := node.run()
 	if err != nil {
-		t.Fatalf("Server.Run() returned an unexpected error: %v", err)
+		t.Fatalf("node.Run() returned an unexpected error: %v", err)
 	}
 
 	got := strings.TrimSpace(out.String())

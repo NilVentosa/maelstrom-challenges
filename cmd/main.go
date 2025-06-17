@@ -6,8 +6,8 @@ import (
 )
 
 func main() {
-	server := Server{os.Stdin, os.Stdout}
-	if err := server.run(); err != nil {
-		log.Fatalf("Server error: %+v", err)
+	node := Node{os.Stdin, os.Stdout}
+	if err := node.run(); err != nil {
+		log.Fatalf("Node error: %+v", err)
 	}
 }
