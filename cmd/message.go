@@ -43,12 +43,14 @@ func NewMessage(src string, dest string, body any) (Message, error) {
 }
 
 type RequestBody struct {
-	NodeId    string `json:"node_id"`
-	Echo      string `json:"echo"`
-	Type      string `json:"type"`
-	MsgId     int    `json:"msg_id"`
-	InReplyTo int    `json:"in_reply_to"`
-	Message   any    `json:"message"`
+	NodeId    string              `json:"node_id"`
+	NodeIds   []string            `json:"node_ids"`
+	Echo      string              `json:"echo"`
+	Type      string              `json:"type"`
+	MsgId     int                 `json:"msg_id"`
+	InReplyTo int                 `json:"in_reply_to"`
+	Message   any                 `json:"message"`
+	Topology  map[string][]string `json:"topology"`
 }
 
 type EchoResponseBody struct {

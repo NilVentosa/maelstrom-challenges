@@ -2,10 +2,48 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"time"
 )
 
+func handleMessage(msg Message) ([]byte, error) {
+	response, responseError := getReplyToMessage(msg)
+
+	if responseError != nil {
+		return nil, responseError
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		return nil, fmt.Errorf("problem marshaling the response: %w", err)
+	}
+
+	return jsonResponse, nil
+}
+
+func getReplyToMessage(msg Message) (Message, error) {
+	var msgBody RequestBody
+	if err := json.Unmarshal(msg.Body, &msgBody); err != nil {
+		return Message{}, err
+	}
+	switch msgBody.Type {
+	case initType:
+		return getReplyToInit(msg)
+	case echoType:
+		return getReplyToEcho(msg)
+	case generateType:
+		return getReplyToGenerate(msg)
+	case broadcastType:
+		return getReplyToBroadcast(msg)
+	case readType:
+		return getReplyToRead(msg)
+	case topologyType:
+		return getReplyToTopology(msg)
+	default:
+		return Message{}, fmt.Errorf("unknown message type: %s", msgBody.Type)
+	}
+}
 func getReplyToInit(msg Message) (Message, error) {
 	var requestBody RequestBody
 	json.Unmarshal(msg.Body, &requestBody)
@@ -79,7 +117,6 @@ func getReplyToRead(msg Message) (Message, error) {
 	)
 }
 
-// {"Dest":"n1", "Src":"c1","Body":{"Type":"topology"}}
 func getReplyToTopology(msg Message) (Message, error) {
 	var body RequestBody
 	json.Unmarshal(msg.Body, &body)

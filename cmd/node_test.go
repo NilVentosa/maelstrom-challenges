@@ -21,7 +21,10 @@ func TestNode_Run(t *testing.T) {
 	in := strings.NewReader(strings.TrimSpace(inputJSON))
 	out := new(bytes.Buffer)
 
-	node := Node{in, out}
+	node := Node{
+		In:  in,
+		Out: out,
+	}
 
 	err := node.run()
 	if err != nil {
@@ -36,8 +39,10 @@ func TestNode_Run(t *testing.T) {
 
 func TestHandleMessage_KnownType(t *testing.T) {
 	input := []byte(`{"src":"c2","dest":"n1","body":{"type":"init","msg_id":2}}`)
+	var msg Message
+	json.Unmarshal(input, &msg)
 
-	response, err := handleMessage(input)
+	response, err := handleMessage(msg)
 	assert.Nil(t, err)
 
 	var responseMessge Message
@@ -51,8 +56,9 @@ func TestHandleMessage_KnownType(t *testing.T) {
 
 func TestHandleMessage_UnknownType(t *testing.T) {
 	input := []byte(`{"src":"c1","dest":"n1","body":{"type":"unknown_type"}}`)
-
-	_, err := handleMessage(input)
+	var msg Message
+	json.Unmarshal(input, &msg)
+	_, err := handleMessage(msg)
 
 	assert.True(t, strings.Contains(err.Error(), "unknown"))
 }
@@ -68,7 +74,7 @@ func TestGetReply_BroadcastMessage(t *testing.T) {
 		Body: marshaledBody,
 	}
 
-	response, err := getReply(message)
+	response, err := getReplyToMessage(message)
 	assert.Nil(t, err)
 
 	var responseBody BroadcastResponseBody
@@ -88,7 +94,7 @@ func TestGetReply_ReadMessage(t *testing.T) {
 		Body: marshaledBody,
 	}
 
-	response, err := getReply(message)
+	response, err := getReplyToMessage(message)
 	assert.Nil(t, err)
 
 	var responseBody ReadResponseBody
@@ -108,7 +114,7 @@ func TestGetReply_TopologyMessage(t *testing.T) {
 		Body: marshaledBody,
 	}
 
-	response, err := getReply(message)
+	response, err := getReplyToMessage(message)
 	assert.Nil(t, err)
 
 	var responseBody TopologyResponseBody
