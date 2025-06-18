@@ -32,7 +32,9 @@ func TestGetReplyToInit(t *testing.T) {
 		},
 	)
 
-	actualReply, _ := getReplyToInit(inputMsg)
+	node := newTestNode()
+
+	actualReply, _ := getReplyToInit(inputMsg, &node)
 
 	assertMessageEquals(t, expectedReply, actualReply)
 }

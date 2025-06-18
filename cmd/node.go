@@ -22,19 +22,7 @@ func (node *Node) run() error {
 		if err := json.Unmarshal(scanner.Bytes(), &msg); err != nil {
 			return fmt.Errorf("error unmarshaling message: %w", err)
 		}
-		var msgBody RequestBody
-		if err := json.Unmarshal(msg.Body, &msgBody); err != nil {
-			return err
-		}
-
-		if msgBody.Type == initType {
-			node.NodeID = msgBody.NodeId
-			node.NodeIds = msgBody.NodeIds
-		}
-		if msgBody.Type == topologyType {
-			node.Topology = msgBody.Topology
-		}
-		response, err := handleMessage(msg)
+		response, err := handleMessage(msg, node)
 		if err != nil {
 			return fmt.Errorf("failed to handle message: %w", err)
 		}

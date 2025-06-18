@@ -42,7 +42,8 @@ func TestHandleMessage_KnownType(t *testing.T) {
 	var msg Message
 	json.Unmarshal(input, &msg)
 
-	response, err := handleMessage(msg)
+	node := newTestNode()
+	response, err := handleMessage(msg, &node)
 	assert.Nil(t, err)
 
 	var responseMessge Message
@@ -58,7 +59,8 @@ func TestHandleMessage_UnknownType(t *testing.T) {
 	input := []byte(`{"src":"c1","dest":"n1","body":{"type":"unknown_type"}}`)
 	var msg Message
 	json.Unmarshal(input, &msg)
-	_, err := handleMessage(msg)
+	node := newTestNode()
+	_, err := getReplyToMessage(msg, &node)
 
 	assert.True(t, strings.Contains(err.Error(), "unknown"))
 }
@@ -74,7 +76,8 @@ func TestGetReply_BroadcastMessage(t *testing.T) {
 		Body: marshaledBody,
 	}
 
-	response, err := getReplyToMessage(message)
+	node := newTestNode()
+	response, err := getReplyToMessage(message, &node)
 	assert.Nil(t, err)
 
 	var responseBody BroadcastResponseBody
@@ -94,7 +97,8 @@ func TestGetReply_ReadMessage(t *testing.T) {
 		Body: marshaledBody,
 	}
 
-	response, err := getReplyToMessage(message)
+	node := newTestNode()
+	response, err := getReplyToMessage(message, &node)
 	assert.Nil(t, err)
 
 	var responseBody ReadResponseBody
@@ -114,11 +118,22 @@ func TestGetReply_TopologyMessage(t *testing.T) {
 		Body: marshaledBody,
 	}
 
-	response, err := getReplyToMessage(message)
+	node := newTestNode()
+	response, err := getReplyToMessage(message, &node)
 	assert.Nil(t, err)
 
 	var responseBody TopologyResponseBody
 	json.Unmarshal(response.Body, &responseBody)
 
 	assert.Equal(t, responseBody.Type, topologyOkType)
+}
+
+func newTestNode() Node {
+	in := strings.NewReader("")
+	out := new(bytes.Buffer)
+
+	return Node{
+		In:  in,
+		Out: out,
+	}
 }
