@@ -35,9 +35,9 @@ func getReplyToMessage(msg Message, node *Node) (Message, error) {
 	case generateType:
 		return getReplyToGenerate(msg)
 	case broadcastType:
-		return getReplyToBroadcast(msg)
+		return getReplyToBroadcast(msg, node)
 	case readType:
-		return getReplyToRead(msg)
+		return getReplyToRead(msg, node)
 	case topologyType:
 		return getReplyToTopology(msg, node)
 	default:
@@ -88,11 +88,11 @@ func getReplyToGenerate(msg Message) (Message, error) {
 		})
 }
 
-func getReplyToBroadcast(msg Message) (Message, error) {
+func getReplyToBroadcast(msg Message, node *Node) (Message, error) {
 	var requestBody RequestBody
 	json.Unmarshal(msg.Body, &requestBody)
 
-	messages = append(messages, requestBody.Message)
+	node.Messages = append(node.Messages, requestBody.Message)
 
 	return NewMessage(
 		msg.Dest,
@@ -104,7 +104,7 @@ func getReplyToBroadcast(msg Message) (Message, error) {
 	)
 }
 
-func getReplyToRead(msg Message) (Message, error) {
+func getReplyToRead(msg Message, node *Node) (Message, error) {
 	var requestBody RequestBody
 	json.Unmarshal(msg.Body, &requestBody)
 
@@ -113,7 +113,7 @@ func getReplyToRead(msg Message) (Message, error) {
 		msg.Src,
 		ReadResponseBody{
 			readOkType,
-			messages,
+			node.Messages,
 			requestBody.MsgId,
 		},
 	)

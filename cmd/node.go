@@ -13,6 +13,7 @@ type Node struct {
 	NodeID   string
 	NodeIds  []string
 	Topology map[string][]string
+	Messages []any
 }
 
 func (node *Node) run() error {
