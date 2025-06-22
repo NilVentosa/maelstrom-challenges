@@ -3,62 +3,57 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strconv"
 	"time"
 )
 
-func handleMessage(msg Message, node *Node) ([]byte, error) {
-	response, responseError := getReplyToMessage(msg, node)
-
-	if responseError != nil {
-		return nil, responseError
-	}
-
-	jsonResponse, err := json.Marshal(response)
-	if err != nil {
-		return nil, fmt.Errorf("problem marshaling the response: %w", err)
-	}
-
-	return jsonResponse, nil
-}
-
-func getReplyToMessage(msg Message, node *Node) (Message, error) {
+func handleMessage(msg Message, node *Node) error {
 	var body RequestBody
 	if err := json.Unmarshal(msg.Body, &body); err != nil {
-		return Message{}, err
+		return err
 	}
+
 	switch body.Type {
 	case initType:
-		return getReplyToInit(msg, body, node)
+		return handleInit(msg, body, node)
 	case echoType:
-		return getReplyToEcho(msg, body)
+		return handleEcho(msg, body, node)
 	case generateType:
-		return getReplyToGenerate(msg, body)
+		return handleGenerate(msg, body, node)
 	case broadcastType:
-		return getReplyToBroadcast(msg, body, node)
+		return handleBroadcast(msg, body, node)
+	case broadcastOkType:
+		return nil
 	case readType:
-		return getReplyToRead(msg, body, node)
+		return handleRead(msg, body, node)
 	case topologyType:
-		return getReplyToTopology(msg, body, node)
+		return handleTopology(msg, body, node)
 	default:
-		return Message{}, fmt.Errorf("unknown message type: %s", body.Type)
+		return fmt.Errorf("unknown message type: %s", body.Type)
 	}
 }
-func getReplyToInit(msg Message, body RequestBody, node *Node) (Message, error) {
+func handleInit(msg Message, body RequestBody, node *Node) error {
 	node.NodeID = body.NodeId
 	node.NodeIds = body.NodeIds
 
-	return NewMessage(
+	initOk, err := NewMessage(
 		msg.Dest,
 		msg.Src,
 		InitResponseBody{
 			initOkType,
 			body.MsgId,
 		})
+
+	if err != nil {
+		return err
+	}
+
+	return node.sendMessage(initOk)
 }
 
-func getReplyToEcho(msg Message, body RequestBody) (Message, error) {
-	return NewMessage(
+func handleEcho(msg Message, body RequestBody, node *Node) error {
+	echoOk, err := NewMessage(
 		msg.Dest,
 		msg.Src,
 		EchoResponseBody{
@@ -66,11 +61,17 @@ func getReplyToEcho(msg Message, body RequestBody) (Message, error) {
 			body.MsgId,
 			body.Echo,
 		})
+
+	if err != nil {
+		return err
+	}
+
+	return node.sendMessage(echoOk)
 }
 
-func getReplyToGenerate(msg Message, body RequestBody) (Message, error) {
+func handleGenerate(msg Message, body RequestBody, node *Node) error {
 	id := strconv.FormatInt(time.Now().UnixNano(), 10) + "-" + msg.Dest
-	return NewMessage(
+	generateOk, err := NewMessage(
 		msg.Dest,
 		msg.Src,
 		GenerateResponseBody{
@@ -78,12 +79,30 @@ func getReplyToGenerate(msg Message, body RequestBody) (Message, error) {
 			body.MsgId,
 			id,
 		})
+	if err != nil {
+		return err
+	}
+
+	return node.sendMessage(generateOk)
 }
 
-func getReplyToBroadcast(msg Message, body RequestBody, node *Node) (Message, error) {
-	node.Messages = append(node.Messages, body.Message)
+func handleBroadcast(msg Message, body RequestBody, node *Node) error {
+	if !slices.Contains(node.Messages, body.Message) {
+		node.Messages = append(node.Messages, body.Message)
+		for _, otherNode := range node.Topology[node.NodeID] {
+			broadcast, err := NewMessage(node.NodeID, otherNode, body)
+			if err != nil {
+				return err
+			}
 
-	return NewMessage(
+			err = node.sendMessage(broadcast)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	broadcastOk, err := NewMessage(
 		msg.Dest,
 		msg.Src,
 		BroadcastResponseBody{
@@ -91,10 +110,15 @@ func getReplyToBroadcast(msg Message, body RequestBody, node *Node) (Message, er
 			body.MsgId,
 		},
 	)
+	if err != nil {
+		return err
+	}
+
+	return node.sendMessage(broadcastOk)
 }
 
-func getReplyToRead(msg Message, body RequestBody, node *Node) (Message, error) {
-	return NewMessage(
+func handleRead(msg Message, body RequestBody, node *Node) error {
+	readOk, err := NewMessage(
 		msg.Dest,
 		msg.Src,
 		ReadResponseBody{
@@ -103,12 +127,17 @@ func getReplyToRead(msg Message, body RequestBody, node *Node) (Message, error) 
 			body.MsgId,
 		},
 	)
+	if err != nil {
+		return err
+	}
+
+	return node.sendMessage(readOk)
 }
 
-func getReplyToTopology(msg Message, body RequestBody, node *Node) (Message, error) {
+func handleTopology(msg Message, body RequestBody, node *Node) error {
 	node.Topology = body.Topology
 
-	return NewMessage(
+	topologyOk, err := NewMessage(
 		msg.Dest,
 		msg.Src,
 		TopologyResponseBody{
@@ -116,4 +145,9 @@ func getReplyToTopology(msg Message, body RequestBody, node *Node) (Message, err
 			body.MsgId,
 		},
 	)
+	if err != nil {
+		return err
+	}
+
+	return node.sendMessage(topologyOk)
 }

@@ -23,13 +23,10 @@ func (node *Node) run() error {
 		if err := json.Unmarshal(scanner.Bytes(), &msg); err != nil {
 			return fmt.Errorf("error unmarshaling message: %w", err)
 		}
-		response, err := handleMessage(msg, node)
+
+		err := handleMessage(msg, node)
 		if err != nil {
 			return fmt.Errorf("failed to handle message: %w", err)
-		}
-
-		if _, err := fmt.Fprintln(node.Out, string(response)); err != nil {
-			return fmt.Errorf("failed to write response: %w", err)
 		}
 	}
 
@@ -37,4 +34,13 @@ func (node *Node) run() error {
 		return fmt.Errorf("error reading from input: %w", err)
 	}
 	return nil
+}
+
+func (node *Node) sendMessage(message Message) error {
+	jsonResponse, err := json.Marshal(message)
+	if err != nil {
+		return err
+	}
+	_, err = fmt.Fprintln(node.Out, string(jsonResponse))
+	return err
 }
