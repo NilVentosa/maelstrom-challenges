@@ -23,113 +23,97 @@ func handleMessage(msg Message, node *Node) ([]byte, error) {
 }
 
 func getReplyToMessage(msg Message, node *Node) (Message, error) {
-	var msgBody RequestBody
-	if err := json.Unmarshal(msg.Body, &msgBody); err != nil {
+	var body RequestBody
+	if err := json.Unmarshal(msg.Body, &body); err != nil {
 		return Message{}, err
 	}
-	switch msgBody.Type {
+	switch body.Type {
 	case initType:
-		return getReplyToInit(msg, node)
+		return getReplyToInit(msg, body, node)
 	case echoType:
-		return getReplyToEcho(msg)
+		return getReplyToEcho(msg, body)
 	case generateType:
-		return getReplyToGenerate(msg)
+		return getReplyToGenerate(msg, body)
 	case broadcastType:
-		return getReplyToBroadcast(msg, node)
+		return getReplyToBroadcast(msg, body, node)
 	case readType:
-		return getReplyToRead(msg, node)
+		return getReplyToRead(msg, body, node)
 	case topologyType:
-		return getReplyToTopology(msg, node)
+		return getReplyToTopology(msg, body, node)
 	default:
-		return Message{}, fmt.Errorf("unknown message type: %s", msgBody.Type)
+		return Message{}, fmt.Errorf("unknown message type: %s", body.Type)
 	}
 }
-func getReplyToInit(msg Message, node *Node) (Message, error) {
-	var requestBody RequestBody
-	json.Unmarshal(msg.Body, &requestBody)
-	node.NodeID = requestBody.NodeId
-	node.NodeIds = requestBody.NodeIds
+func getReplyToInit(msg Message, body RequestBody, node *Node) (Message, error) {
+	node.NodeID = body.NodeId
+	node.NodeIds = body.NodeIds
 
 	return NewMessage(
 		msg.Dest,
 		msg.Src,
 		InitResponseBody{
 			initOkType,
-			requestBody.MsgId,
+			body.MsgId,
 		})
 }
 
-func getReplyToEcho(msg Message) (Message, error) {
-	var requestBody RequestBody
-	json.Unmarshal(msg.Body, &requestBody)
-
+func getReplyToEcho(msg Message, body RequestBody) (Message, error) {
 	return NewMessage(
 		msg.Dest,
 		msg.Src,
 		EchoResponseBody{
 			echoOkType,
-			requestBody.MsgId,
-			requestBody.Echo,
+			body.MsgId,
+			body.Echo,
 		})
 }
 
-func getReplyToGenerate(msg Message) (Message, error) {
-	var requestBody RequestBody
-	json.Unmarshal(msg.Body, &requestBody)
-
+func getReplyToGenerate(msg Message, body RequestBody) (Message, error) {
 	id := strconv.FormatInt(time.Now().UnixNano(), 10) + "-" + msg.Dest
 	return NewMessage(
 		msg.Dest,
 		msg.Src,
 		GenerateResponseBody{
 			generateOkType,
-			requestBody.MsgId,
+			body.MsgId,
 			id,
 		})
 }
 
-func getReplyToBroadcast(msg Message, node *Node) (Message, error) {
-	var requestBody RequestBody
-	json.Unmarshal(msg.Body, &requestBody)
-
-	node.Messages = append(node.Messages, requestBody.Message)
+func getReplyToBroadcast(msg Message, body RequestBody, node *Node) (Message, error) {
+	node.Messages = append(node.Messages, body.Message)
 
 	return NewMessage(
 		msg.Dest,
 		msg.Src,
 		BroadcastResponseBody{
 			broadcastOkType,
-			requestBody.MsgId,
+			body.MsgId,
 		},
 	)
 }
 
-func getReplyToRead(msg Message, node *Node) (Message, error) {
-	var requestBody RequestBody
-	json.Unmarshal(msg.Body, &requestBody)
-
+func getReplyToRead(msg Message, body RequestBody, node *Node) (Message, error) {
 	return NewMessage(
 		msg.Dest,
 		msg.Src,
 		ReadResponseBody{
 			readOkType,
 			node.Messages,
-			requestBody.MsgId,
+			body.MsgId,
 		},
 	)
 }
 
-func getReplyToTopology(msg Message, node *Node) (Message, error) {
-	var requestBody RequestBody
-	json.Unmarshal(msg.Body, &requestBody)
-	node.Topology = requestBody.Topology
+func getReplyToTopology(msg Message, body RequestBody, node *Node) (Message, error) {
+	node.Topology = body.Topology
 
 	return NewMessage(
 		msg.Dest,
 		msg.Src,
 		TopologyResponseBody{
 			topologyOkType,
-			requestBody.MsgId,
+			body.MsgId,
 		},
 	)
 }
