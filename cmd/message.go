@@ -49,7 +49,7 @@ type RequestBody struct {
 	Type      string              `json:"type"`
 	MsgId     int                 `json:"msg_id"`
 	InReplyTo int                 `json:"in_reply_to"`
-	Message   any                 `json:"message"`
+	Message   int                 `json:"message"`
 	Topology  map[string][]string `json:"topology"`
 }
 
@@ -77,7 +77,7 @@ type BroadcastResponseBody struct {
 
 type ReadResponseBody struct {
 	Type      string `json:"type"`
-	Messages  []any  `json:"messages"`
+	Messages  []int  `json:"messages"`
 	InReplyTo int    `json:"in_reply_to"`
 }
 

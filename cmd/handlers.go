@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"slices"
+	"maps"
 	"strconv"
 	"time"
 )
@@ -36,6 +36,7 @@ func handleMessage(msg Message, node *Node) error {
 func handleInit(msg Message, body RequestBody, node *Node) error {
 	node.NodeID = body.NodeId
 	node.NodeIds = body.NodeIds
+	node.Messages = make(map[int]struct{})
 
 	initOk, err := NewMessage(
 		msg.Dest,
@@ -87,8 +88,9 @@ func handleGenerate(msg Message, body RequestBody, node *Node) error {
 }
 
 func handleBroadcast(msg Message, body RequestBody, node *Node) error {
-	if !slices.Contains(node.Messages, body.Message) {
-		node.Messages = append(node.Messages, body.Message)
+	_, exists := node.Messages[body.Message]
+	if !exists {
+		node.Messages[body.Message] = struct{}{}
 		for _, otherNode := range node.Topology[node.NodeID] {
 			broadcast, err := NewMessage(node.NodeID, otherNode, body)
 			if err != nil {
@@ -118,12 +120,16 @@ func handleBroadcast(msg Message, body RequestBody, node *Node) error {
 }
 
 func handleRead(msg Message, body RequestBody, node *Node) error {
+	var messages []int
+	for key := range maps.Keys(node.Messages) {
+		messages = append(messages, key)
+	}
 	readOk, err := NewMessage(
 		msg.Dest,
 		msg.Src,
 		ReadResponseBody{
 			readOkType,
-			node.Messages,
+			messages,
 			body.MsgId,
 		},
 	)
