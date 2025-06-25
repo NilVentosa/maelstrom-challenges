@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"maps"
 	"strconv"
 	"time"
 )
@@ -33,8 +32,9 @@ func handleMessage(msg Message, node *Node) error {
 		return fmt.Errorf("unknown message type: %s", body.Type)
 	}
 }
+
 func handleInit(msg Message, body RequestBody, node *Node) error {
-	node.NodeID = body.NodeId
+	node.NodeID = body.NodeID
 	node.NodeIds = body.NodeIds
 	node.Messages = make(map[int]struct{})
 
@@ -43,9 +43,8 @@ func handleInit(msg Message, body RequestBody, node *Node) error {
 		msg.Src,
 		InitResponseBody{
 			initOkType,
-			body.MsgId,
+			body.MsgID,
 		})
-
 	if err != nil {
 		return err
 	}
@@ -59,10 +58,9 @@ func handleEcho(msg Message, body RequestBody, node *Node) error {
 		msg.Src,
 		EchoResponseBody{
 			echoOkType,
-			body.MsgId,
+			body.MsgID,
 			body.Echo,
 		})
-
 	if err != nil {
 		return err
 	}
@@ -77,7 +75,7 @@ func handleGenerate(msg Message, body RequestBody, node *Node) error {
 		msg.Src,
 		GenerateResponseBody{
 			generateOkType,
-			body.MsgId,
+			body.MsgID,
 			id,
 		})
 	if err != nil {
@@ -109,7 +107,7 @@ func handleBroadcast(msg Message, body RequestBody, node *Node) error {
 		msg.Src,
 		BroadcastResponseBody{
 			broadcastOkType,
-			body.MsgId,
+			body.MsgID,
 		},
 	)
 	if err != nil {
@@ -121,7 +119,7 @@ func handleBroadcast(msg Message, body RequestBody, node *Node) error {
 
 func handleRead(msg Message, body RequestBody, node *Node) error {
 	var messages []int
-	for key := range maps.Keys(node.Messages) {
+	for key := range node.Messages {
 		messages = append(messages, key)
 	}
 	readOk, err := NewMessage(
@@ -130,7 +128,7 @@ func handleRead(msg Message, body RequestBody, node *Node) error {
 		ReadResponseBody{
 			readOkType,
 			messages,
-			body.MsgId,
+			body.MsgID,
 		},
 	)
 	if err != nil {
@@ -148,7 +146,7 @@ func handleTopology(msg Message, body RequestBody, node *Node) error {
 		msg.Src,
 		TopologyResponseBody{
 			topologyOkType,
-			body.MsgId,
+			body.MsgID,
 		},
 	)
 	if err != nil {

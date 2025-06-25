@@ -19,9 +19,9 @@ const (
 
 	// Keys in the messages
 	echoKey      = "echo"
-	nodeIdKey    = "node_id"
+	nodeIDKey    = "node_id"
 	typeKey      = "type"
-	msgIdKey     = "msg_id"
+	msgIDKey     = "msg_id"
 	inReplyToKey = "in_reply_to"
 	idKey        = "id"
 	messageKey   = "message"
@@ -43,11 +43,11 @@ func NewMessage(src string, dest string, body any) (Message, error) {
 }
 
 type RequestBody struct {
-	NodeId    string              `json:"node_id"`
+	NodeID    string              `json:"node_id"`
 	NodeIds   []string            `json:"node_ids"`
 	Echo      string              `json:"echo"`
 	Type      string              `json:"type"`
-	MsgId     int                 `json:"msg_id"`
+	MsgID     int                 `json:"msg_id"`
 	InReplyTo int                 `json:"in_reply_to"`
 	Message   int                 `json:"message"`
 	Topology  map[string][]string `json:"topology"`
@@ -67,7 +67,7 @@ type InitResponseBody struct {
 type GenerateResponseBody struct {
 	Type      string `json:"type"`
 	InReplyTo int    `json:"in_reply_to"`
-	Id        string `json:"id"`
+	ID        string `json:"id"`
 }
 
 type BroadcastResponseBody struct {
