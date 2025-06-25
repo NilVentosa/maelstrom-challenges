@@ -13,7 +13,15 @@ type Node struct {
 	NodeID   string
 	NodeIds  []string
 	Topology map[string][]string
-	Messages map[int]struct{}
+	Messages ConcurrentSet[int]
+}
+
+func NewNode(in io.Reader, out io.Writer) Node {
+	return Node{
+		In:       in,
+		Out:      out,
+		Messages: NewConcurrentSet[int](),
+	}
 }
 
 func (node *Node) run() error {

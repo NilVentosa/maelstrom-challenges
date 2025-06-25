@@ -36,7 +36,6 @@ func handleMessage(msg Message, node *Node) error {
 func handleInit(msg Message, body RequestBody, node *Node) error {
 	node.NodeID = body.NodeID
 	node.NodeIds = body.NodeIds
-	node.Messages = make(map[int]struct{})
 
 	initOk, err := NewMessage(
 		msg.Dest,
@@ -86,9 +85,8 @@ func handleGenerate(msg Message, body RequestBody, node *Node) error {
 }
 
 func handleBroadcast(msg Message, body RequestBody, node *Node) error {
-	_, exists := node.Messages[body.Message]
-	if !exists {
-		node.Messages[body.Message] = struct{}{}
+	if !node.Messages.Contains(body.Message) {
+		node.Messages.Add(body.Message)
 		for _, otherNode := range node.Topology[node.NodeID] {
 			broadcast, err := NewMessage(node.NodeID, otherNode, body)
 			if err != nil {
@@ -119,7 +117,7 @@ func handleBroadcast(msg Message, body RequestBody, node *Node) error {
 
 func handleRead(msg Message, body RequestBody, node *Node) error {
 	var messages []int
-	for key := range node.Messages {
+	for key := range node.Messages.Values() {
 		messages = append(messages, key)
 	}
 	readOk, err := NewMessage(

@@ -6,11 +6,10 @@ import (
 )
 
 func main() {
-
-	node := Node{
-		In:  os.Stdin,
-		Out: os.Stdout,
-	}
+	node := NewNode(
+		os.Stdin,
+		os.Stdout,
+	)
 
 	if err := node.run(); err != nil {
 		log.Fatalf("Node error: %+v", err)
