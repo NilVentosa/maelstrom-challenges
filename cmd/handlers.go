@@ -7,6 +7,12 @@ import (
 	"time"
 )
 
+type PendingAck struct {
+	MsgID int
+	Type  string
+	From  string
+}
+
 func handleMessage(msg Message, node *Node) error {
 	var body RequestBody
 	if err := json.Unmarshal(msg.Body, &body); err != nil {
@@ -23,7 +29,7 @@ func handleMessage(msg Message, node *Node) error {
 	case broadcastType:
 		return handleBroadcast(msg, body, node)
 	case broadcastOkType:
-		return nil
+		return handleBroadcastOk(msg, body, node)
 	case readType:
 		return handleRead(msg, body, node)
 	case topologyType:
@@ -87,16 +93,13 @@ func handleGenerate(msg Message, body RequestBody, node *Node) error {
 func handleBroadcast(msg Message, body RequestBody, node *Node) error {
 	if !node.Messages.Contains(body.Message) {
 		node.Messages.Add(body.Message)
-		for _, otherNode := range node.Topology[node.NodeID] {
-			broadcast, err := NewMessage(node.NodeID, otherNode, body)
+		for _, n := range node.Topology[node.NodeID] {
+			broadcast, err := NewMessage(node.NodeID, n, body)
 			if err != nil {
 				return err
 			}
 
-			err = node.sendMessage(broadcast)
-			if err != nil {
-				return err
-			}
+			go node.sendMessageUntilAck(broadcast, body)
 		}
 	}
 
@@ -113,6 +116,11 @@ func handleBroadcast(msg Message, body RequestBody, node *Node) error {
 	}
 
 	return node.sendMessage(broadcastOk)
+}
+
+func handleBroadcastOk(msg Message, body RequestBody, node *Node) error {
+	node.Pending.Remove(PendingAck{body.InReplyTo, broadcastOkType, msg.Src})
+	return nil
 }
 
 func handleRead(msg Message, body RequestBody, node *Node) error {

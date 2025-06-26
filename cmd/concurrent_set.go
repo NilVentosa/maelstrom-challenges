@@ -29,6 +29,12 @@ func (s *ConcurrentSet[T]) Add(item T) {
 	s.d[item] = struct{}{}
 }
 
+func (s *ConcurrentSet[T]) Remove(item T) {
+	s.m.Lock()
+	defer s.m.Unlock()
+	delete(s.d, item)
+}
+
 func (s *ConcurrentSet[T]) Values() iter.Seq[T] {
 	s.m.RLock()
 	defer s.m.RUnlock()

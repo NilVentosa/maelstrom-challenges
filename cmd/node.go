@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"time"
 )
 
 type Node struct {
@@ -14,6 +15,7 @@ type Node struct {
 	NodeIds  []string
 	Topology map[string][]string
 	Messages ConcurrentSet[int]
+	Pending  ConcurrentSet[PendingAck]
 }
 
 func NewNode(in io.Reader, out io.Writer) Node {
@@ -21,6 +23,7 @@ func NewNode(in io.Reader, out io.Writer) Node {
 		In:       in,
 		Out:      out,
 		Messages: NewConcurrentSet[int](),
+		Pending:  NewConcurrentSet[PendingAck](),
 	}
 }
 
@@ -51,4 +54,17 @@ func (node *Node) sendMessage(message Message) error {
 	}
 	_, err = fmt.Fprintln(node.Out, string(jsonResponse))
 	return err
+}
+
+func (node *Node) sendMessageUntilAck(message Message, body RequestBody) {
+	// TODO: make the type of PendingAck more generic
+	pendingAck := PendingAck{body.MsgID, broadcastOkType, message.Dest}
+	node.Pending.Add(pendingAck)
+	for node.Pending.Contains(pendingAck) {
+		if err := node.sendMessage(message); err != nil {
+			fmt.Printf("Error sending message: %v\n", err)
+			return
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
 }
