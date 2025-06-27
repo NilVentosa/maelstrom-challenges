@@ -69,7 +69,7 @@ func (node *Node) sendMessageUntilAck(message messages.Message, body messages.Re
 	// TODO: make the type of PendingAck more generic
 	pendingAck := PendingAck{
 		body.MsgID,
-		messages.BroadcastOkType,
+		body.Type + "_ok",
 		message.Dest,
 	}
 	node.Pending.Add(pendingAck)
