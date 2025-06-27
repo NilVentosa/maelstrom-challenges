@@ -1,4 +1,4 @@
-package main
+package node
 
 import (
 	"bufio"
@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"io"
 	"time"
+
+	"github.com/nilventosa/maelstrom-challenges/internal/concurrent"
+	"github.com/nilventosa/maelstrom-challenges/internal/messages"
 )
 
 type Node struct {
@@ -14,23 +17,29 @@ type Node struct {
 	NodeID   string
 	NodeIds  []string
 	Topology map[string][]string
-	Messages ConcurrentSet[int]
-	Pending  ConcurrentSet[PendingAck]
+	Messages concurrent.Set[int]
+	Pending  concurrent.Set[PendingAck]
+}
+
+type PendingAck struct {
+	MsgID int
+	Type  string
+	From  string
 }
 
 func NewNode(in io.Reader, out io.Writer) Node {
 	return Node{
 		In:       in,
 		Out:      out,
-		Messages: NewConcurrentSet[int](),
-		Pending:  NewConcurrentSet[PendingAck](),
+		Messages: concurrent.NewConcurrentSet[int](),
+		Pending:  concurrent.NewConcurrentSet[PendingAck](),
 	}
 }
 
-func (node *Node) run() error {
+func (node *Node) Run() error {
 	scanner := bufio.NewScanner(node.In)
 	for scanner.Scan() {
-		var msg Message
+		var msg messages.Message
 		if err := json.Unmarshal(scanner.Bytes(), &msg); err != nil {
 			return fmt.Errorf("error unmarshaling message: %w", err)
 		}
@@ -47,7 +56,7 @@ func (node *Node) run() error {
 	return nil
 }
 
-func (node *Node) sendMessage(message Message) error {
+func (node *Node) sendMessage(message messages.Message) error {
 	jsonResponse, err := json.Marshal(message)
 	if err != nil {
 		return err
@@ -56,9 +65,13 @@ func (node *Node) sendMessage(message Message) error {
 	return err
 }
 
-func (node *Node) sendMessageUntilAck(message Message, body RequestBody) {
+func (node *Node) sendMessageUntilAck(message messages.Message, body messages.RequestBody) {
 	// TODO: make the type of PendingAck more generic
-	pendingAck := PendingAck{body.MsgID, broadcastOkType, message.Dest}
+	pendingAck := PendingAck{
+		body.MsgID,
+		messages.BroadcastOkType,
+		message.Dest,
+	}
 	node.Pending.Add(pendingAck)
 	for node.Pending.Contains(pendingAck) {
 		if err := node.sendMessage(message); err != nil {

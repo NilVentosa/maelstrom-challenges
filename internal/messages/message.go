@@ -1,31 +1,33 @@
-package main
+package messages
 
 import "encoding/json"
 
 const (
 	// Message types
-	initType        = "init"
-	initOkType      = "init_ok"
-	echoType        = "echo"
-	echoOkType      = "echo_ok"
-	generateType    = "generate"
-	generateOkType  = "generate_ok"
-	broadcastType   = "broadcast"
-	broadcastOkType = "broadcast_ok"
-	readType        = "read"
-	readOkType      = "read_ok"
-	topologyType    = "topology"
-	topologyOkType  = "topology_ok"
+	InitType        = "init"
+	InitOkType      = "init_ok"
+	EchoType        = "echo"
+	EchoOkType      = "echo_ok"
+	GenerateType    = "generate"
+	GenerateOkType  = "generate_ok"
+	BroadcastType   = "broadcast"
+	BroadcastOkType = "broadcast_ok"
+	ReadType        = "read"
+	ReadOkType      = "read_ok"
+	TopologyType    = "topology"
+	TopologyOkType  = "topology_ok"
 
-	// Keys in the messages
-	echoKey      = "echo"
-	nodeIDKey    = "node_id"
-	typeKey      = "type"
-	msgIDKey     = "msg_id"
-	inReplyToKey = "in_reply_to"
-	idKey        = "id"
-	messageKey   = "message"
-	messagesKey  = "messages"
+	// Keys in the messages - these might become less necessary if using specific structs
+	EchoKey      = "echo"
+	NodeIDKey    = "node_id"
+	TypeKey      = "type"
+	MsgIDKey     = "msg_id"
+	InReplyToKey = "in_reply_to"
+	IDKey        = "id"
+	MessageKey   = "message"
+	MessagesKey  = "messages"
+	NodeIDsKey   = "node_ids" // Added for consistency with RequestBody
+	TopologyKey  = "topology" // Added for consistency with RequestBody
 )
 
 type Message struct {

@@ -1,4 +1,4 @@
-package main
+package node
 
 import (
 	"bytes"
@@ -25,7 +25,7 @@ func TestNode_Run(t *testing.T) {
 		Out: out,
 	}
 
-	err := node.run()
+	err := node.Run()
 	if err != nil {
 		t.Fatalf("node.Run() returned an unexpected error: %v", err)
 	}
