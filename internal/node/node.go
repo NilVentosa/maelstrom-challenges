@@ -66,7 +66,6 @@ func (node *Node) sendMessage(message messages.Message) error {
 }
 
 func (node *Node) sendMessageUntilAck(message messages.Message, body messages.RequestBody) {
-	// TODO: make the type of PendingAck more generic
 	pendingAck := PendingAck{
 		body.MsgID,
 		body.Type + "_ok",
